@@ -3,7 +3,7 @@
 The code in this paper has been checked with Agda version 2.6.3 using the
 Cubical library version 0.4.
 
-The folder [literate](https://github.com/maxdore/collapse/tree/main/src)
+The folder [literate](https://github.com/maxdore/collapse/tree/main/literate)
 contains a monolithic literate Agda file which was used to create Agda code in the paper.
 
 The project is better browsable as presented in
