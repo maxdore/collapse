@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Examples.Boundary</title><link rel="stylesheet" href="Agda.css"></head><body><pre class="Agda"><a id="1" class="Symbol">{-#</a> <a id="5" class="Keyword">OPTIONS</a> <a id="13" class="Pragma">--cubical</a> <a id="23" class="Pragma">--safe</a> <a id="30" class="Symbol">#-}</a>
+<a id="34" class="Keyword">module</a> <a id="41" href="Examples.Boundary.html" class="Module">Examples.Boundary</a> <a id="59" class="Keyword">where</a>
+
+<a id="66" class="Keyword">open</a> <a id="71" class="Keyword">import</a> <a id="78" href="Cubical.Foundations.Prelude.html" class="Module">Cubical.Foundations.Prelude</a>
+<a id="106" class="Keyword">open</a> <a id="111" class="Keyword">import</a> <a id="118" href="Cubical.Foundations.HLevels.html" class="Module">Cubical.Foundations.HLevels</a>
+
+<a id="147" class="Keyword">open</a> <a id="152" class="Keyword">import</a> <a id="159" href="Cubical.Relation.Nullary.html" class="Module">Cubical.Relation.Nullary</a>
+<a id="184" class="Keyword">open</a> <a id="189" class="Keyword">import</a> <a id="196" href="Cubical.Relation.Binary.Poset.html" class="Module">Cubical.Relation.Binary.Poset</a>
+
+<a id="227" class="Keyword">open</a> <a id="232" class="Keyword">import</a> <a id="239" href="Cubical.Data.Sigma.html" class="Module">Cubical.Data.Sigma</a>
+<a id="258" class="Keyword">open</a> <a id="263" class="Keyword">import</a> <a id="270" href="Cubical.Data.Nat.html" class="Module">Cubical.Data.Nat</a>
+<a id="287" class="Keyword">open</a> <a id="292" class="Keyword">import</a> <a id="299" href="Cubical.Data.Nat.Order.html" class="Module">Cubical.Data.Nat.Order</a>
+<a id="322" class="Keyword">open</a> <a id="327" class="Keyword">import</a> <a id="334" href="Cubical.Data.NatPlusOne.html" class="Module">Cubical.Data.NatPlusOne</a>
+<a id="358" class="Keyword">open</a> <a id="363" class="Keyword">import</a> <a id="370" href="Cubical.Data.List.html" class="Module">Cubical.Data.List</a>
+
+<a id="389" class="Keyword">open</a> <a id="394" class="Keyword">import</a> <a id="401" href="Prelude.html" class="Module">Prelude</a>
+<a id="409" class="Keyword">open</a> <a id="414" class="Keyword">import</a> <a id="421" href="NeSet.html" class="Module">NeSet</a>
+<a id="427" class="Keyword">open</a> <a id="432" class="Keyword">import</a> <a id="439" href="List.html" class="Module">List</a>
+<a id="444" class="Keyword">open</a> <a id="449" class="Keyword">import</a> <a id="456" href="SimplicialComplex.html" class="Module">SimplicialComplex</a>
+<a id="474" class="Keyword">open</a> <a id="479" class="Keyword">import</a> <a id="486" href="SimplicialSet.html" class="Module">SimplicialSet</a>
+<a id="500" class="Keyword">open</a> <a id="505" class="Keyword">import</a> <a id="512" href="PCategory.html" class="Module">PCategory</a>
+<a id="522" class="Keyword">open</a> <a id="527" class="Keyword">import</a> <a id="534" href="EntrancePath.html" class="Module">EntrancePath</a>
+<a id="547" class="Keyword">open</a> <a id="552" class="Keyword">import</a> <a id="559" href="Nerve.html" class="Module">Nerve</a>
+<a id="565" class="Keyword">open</a> <a id="570" class="Keyword">import</a> <a id="577" href="Realization.html" class="Module">Realization</a>
+<a id="589" class="Keyword">open</a> <a id="594" class="Keyword">import</a> <a id="601" href="ClassifyingSpace.html" class="Module">ClassifyingSpace</a>
+
+<a id="619" class="Keyword">open</a> <a id="624" class="Keyword">import</a> <a id="631" href="Examples.Ssubsets.html" class="Module">Examples.Ssubsets</a>
+
+
+<a id="651" class="Keyword">open</a> <a id="656" href="NeSet.html#938" class="Module">neSet</a> <a id="662" href="NeSet.html#10660" class="Function">ℕlSet</a>
+<a id="668" class="Keyword">open</a> <a id="673" href="Examples.Ssubsets.html#926" class="Module">Ssubsets</a> <a id="682" href="NeSet.html#10660" class="Function">ℕlSet</a>
+<a id="688" class="Keyword">open</a> <a id="693" href="EntrancePath.html#8854" class="Module">FacePoset</a>
+<a id="703" class="Keyword">open</a> <a id="708" href="EntrancePath.html#1005" class="Module">EntPath</a>
+<a id="716" class="Keyword">module</a> <a id="⊆Pos"></a><a id="723" href="Examples.Boundary.html#723" class="Module">⊆Pos</a> <a id="728" class="Symbol">=</a> <a id="730" href="Cubical.Relation.Binary.Poset.html#803" class="Module">IsPoset</a> <a id="738" href="NeSet.html#6774" class="Function">⊆-IsPoset</a>
+
+<a id="∂"></a><a id="749" href="Examples.Boundary.html#749" class="Function">∂</a> <a id="751" class="Symbol">:</a> <a id="753" href="Agda.Builtin.Nat.html#192" class="Datatype">ℕ</a> <a id="755" class="Symbol">→</a> <a id="757" href="SimplicialComplex.html#943" class="Record">SimplicialComplex</a>
+<a id="775" href="Examples.Boundary.html#749" class="Function">∂</a> <a id="777" href="Examples.Boundary.html#777" class="Bound">n</a> <a id="779" class="Symbol">=</a> <a id="781" href="SimplicialComplex.html#3141" class="Function">ℕSC</a> <a id="785" class="Symbol">(</a><a id="786" href="Examples.Ssubsets.html#4837" class="Function">ssubsets</a> <a id="795" class="Symbol">(</a><a id="796" href="Examples.Boundary.html#777" class="Bound">n</a> <a id="798" href="NeSet.html#10790" class="Function Operator">-to-0</a><a id="803" class="Symbol">))</a> <a id="806" href="Examples.Boundary.html#821" class="Function">closed</a> <a id="813" class="Keyword">where</a>
+  <a id="821" href="Examples.Boundary.html#821" class="Function">closed</a> <a id="828" class="Symbol">:</a> <a id="830" href="Examples.Ssubsets.html#4837" class="Function">ssubsets</a> <a id="839" class="Symbol">(</a><a id="840" href="Examples.Boundary.html#777" class="Bound">n</a> <a id="842" href="NeSet.html#10790" class="Function Operator">-to-0</a><a id="847" class="Symbol">)</a> <a id="849" href="List.html#2530" class="Function Operator">closedUnder</a> <a id="861" href="NeSet.html#1827" class="Function Operator">_⊆_</a>
+  <a id="867" href="Examples.Boundary.html#821" class="Function">closed</a> <a id="874" href="Examples.Boundary.html#874" class="Bound">X</a> <a id="876" href="Examples.Boundary.html#876" class="Bound">P</a> <a id="878" href="Examples.Boundary.html#878" class="Bound">Y</a> <a id="880" href="Examples.Boundary.html#880" class="Bound">Q</a> <a id="882" class="Symbol">=</a> <a id="884" href="Examples.Ssubsets.html#5044" class="Function">ssubsets-comp</a> <a id="898" class="Symbol">(</a><a id="899" href="NeSet.html#8285" class="Function">⊆⊂-trans</a> <a id="908" href="Examples.Boundary.html#878" class="Bound">Y</a> <a id="910" href="Examples.Boundary.html#874" class="Bound">X</a> <a id="912" class="Symbol">(</a><a id="913" href="Examples.Boundary.html#777" class="Bound">n</a> <a id="915" href="NeSet.html#10790" class="Function Operator">-to-0</a><a id="920" class="Symbol">)</a> <a id="922" href="Examples.Boundary.html#880" class="Bound">Q</a> <a id="924" class="Symbol">(</a><a id="925" href="Examples.Ssubsets.html#4915" class="Function">ssubsets-corr</a> <a id="939" href="Examples.Boundary.html#876" class="Bound">P</a><a id="940" class="Symbol">))</a>
+</pre></body></html>

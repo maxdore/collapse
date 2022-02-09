@@ -14,7 +14,7 @@ open import Cubical.Relation.Binary
 open import Cubical.Relation.Binary.Poset
 
 open import Cubical.Data.Unit
-open import Cubical.Data.Bool
+-- open import Cubical.Data.Bool
 open import Cubical.Data.Empty renaming (rec to absurd)
 open import Cubical.Data.Sum hiding (map) renaming (rec to srec)
 open import Cubical.Data.Sigma
@@ -22,7 +22,6 @@ open import Cubical.Data.Nat
 open import Cubical.Data.Nat.Order
 open import Cubical.Data.NatPlusOne
 open import Cubical.Data.List
-
 
 open import Prelude
 open import List
@@ -252,266 +251,23 @@ module neSet {ℓ₀ ℓ₁} (O : lSet {ℓ₀} {ℓ₁}) where
     (λ pxs → there (insertList-tail (⊏List-there desc) (e , es) pxs))
 
 
-  module WithoutΣ where
-    subsets : (x : carrier) → (xs : List carrier) → ordered (x ∷ xs) → List neSet
+_>_ : Rel ℕ ℕ ℓ-zero
+m > n = (n < m)
 
-    subsets-corr : {x : carrier} {xs : List carrier} (ds : ordered (x ∷ xs))
-      → {y : carrier} {ys : List carrier} (es : ordered (y ∷ ys))
-      → (y , ys , es) ∈ subsets x xs ds
-      → (y , ys , es) ⊆ (x , xs , ds)
-
-    x⊏subsets : (x : carrier) {x' : carrier} {xs : List carrier} → ((d , ds) : ordered (x ∷ x' ∷ xs))
-      → ⊏List x (subsets x' xs ds)
-    x⊏subsets x (d , ds) (y , ys , es) p with (split⊆ ds es (subsets-corr ds es p))
-    ... | inl q = subst _ q d
-    ... | inr q = ⊏-trans _ _ _ d q
-
-    insertSubsets : (x : carrier) {x' : carrier} {xs : List carrier} → (ordered (x ∷ x' ∷ xs)) → List neSet
-    insertSubsets x {x'} {xs} (d , ds) = insertList x (subsets x' xs ds) (x⊏subsets x (d , ds))
-
-    subsets x [] ds = [ singleton x ]
-    subsets x (x' ∷ xs) (d , ds) = [ singleton x ] ++ subsets x' xs ds ++ insertSubsets x (d , ds)
-
-    subsets-corr {x} {[]} tt* {y} {ys} es P = subst (_⊆ (singleton x)) (sym (x∈[y]→x≡y neSet-isSet P)) (IsPoset.is-refl (⊆-IsPoset) _)
-
-    subsets-corr {x} {x' ∷ xs} (d , ds) {y} {[]} es P with dec++ discreteneSet _ [ singleton x ] _ P
-    ... | inl Q = λ z z∈[y] → here (x∈[y]→x≡y carrier-isSet z∈[y] ∙ cons-inj₁ (toList≡ _ _ (x∈[y]→x≡y neSet-isSet Q)))
-    ... | inr Q with dec++ discreteneSet _ (subsets x' xs ds) (insertSubsets x (d , ds)) Q
-    ... |       inl R = λ y' p → there (subsets-corr ds es R y' p)
-    ... |       inr R = subst (λ a → [ a ] ⊆L (x ∷ x' ∷ xs))
-                         (sym (insertList-head (x⊏subsets x (d , ds)) es R))
-                         λ x₁ x₂ → here (x∈[y]→x≡y carrier-isSet x₂)
-
-    subsets-corr {x} {x' ∷ xs} (d , ds) {y} {y' ∷ ys} (e , es) P with dec++ discreteneSet _ [ singleton x ] _ P
-    ... | inl Q = absurd (¬cons≡nil (cons-inj₂ (toList≡ _ _ (x∈[y]→x≡y neSet-isSet Q))))
-    ... | inr Q with dec++ discreteneSet _ (subsets x' xs ds) (insertSubsets x (d , ds)) Q
-    ... |       inl R = λ z p → there (subsets-corr ds (e , es) R z p)
-    ... |       inr R =  subst (λ a → (a ∷ y' ∷ ys) ⊆L (x ∷ x' ∷ xs))
-                           (sym (insertList-head (x⊏subsets x (d , ds)) (e , es) R) )
-                           (xs⊆Lys→xxs⊆Lxys _ _ x (subsets-corr ds es (insertList-tail (x⊏subsets x (d , ds)) (e , es) R)))
+ℕlSet = lset ℕ discreteℕ _>_ (λ m n → m≤n-isProp) (λ x → ¬m<m) (λ m n o p q → <-trans q p)
 
 
-    subsets-comp : {x : carrier} {xs : List carrier} (ds : ordered (x ∷ xs))
-      → {y : carrier} {ys : List carrier} (es : ordered (y ∷ ys))
-      → (y , ys , es) ⊆ (x , xs , ds)
-      → (y , ys , es) ∈ subsets x xs ds
-    subsets-comp {x} {[]} ds {y} {ys} es P = here (toneSet≡ _ _ (ys⊆[x] es P))
-    subsets-comp {x} {x' ∷ xs} (d , ds) {y} {[]} tt* P with
-      split⊆ (d , ds) _ P
-    ... | inl p = here (ΣPathP ((sym p) , ΣPathP (refl , refl)))
-    ... | inr p = x∈xs→x∈xs++ys {Adec = discreteneSet} _ (_ ∷ subsets x' xs ds) _
-              (there (subsets-comp ds tt* (⊏-step (d , ds) tt* P (⊏→≢ p))))
-    subsets-comp {x} {x' ∷ xs} (d , ds) {y} {y' ∷ ys} (e , es) P with
-      split⊆ (d , ds) (e , es) P
-    ... | inl p = x∈xs→x∈ys++xs _ (insertList x (subsets x' xs ds) (x⊏subsets x (d , ds))) _
-                   (subst (_∈ insertList x (subsets x' xs ds) (x⊏subsets x (d , ds))) (toneSet≡ _ _ (cong (_∷ y' ∷ ys) p)) lemma )
-                   where
-                   IH = subsets-comp ds es (⊆-skip (d , ds) (e , es) P p)
-                   lemma = insertList-corr (x⊏subsets x (d , ds)) (y' , ys , es) (subst (_⊏ y') (sym p) e) IH
-    ... | inr p = x∈xs→x∈xs++ys {Adec = discreteneSet} _ (_ ∷ subsets x' xs ds) _
-             (there (subsets-comp ds (e , es) (⊏-step (d , ds) (e , es) P (⊏→≢ p))))
+module _ where
+  open neSet ℕlSet
 
-    ssubsets : (x : carrier) → (xs : List carrier) → ordered (x ∷ xs) → List neSet
+  _-to-0 : (n : ℕ) → neSet
+  fstn-to-0≡n : (n : ℕ) → fst (n -to-0) ≡ n
 
-    ssubsets-corr : {x : carrier} {xs : List carrier} (ds : ordered (x ∷ xs))
-      → {y : carrier} {ys : List carrier} (es : ordered (y ∷ ys))
-      → (y , ys , es) ∈ ssubsets x xs ds
-      → (y , ys , es) ⊂ (x , xs , ds)
+  zero -to-0 = singleton 0
+  suc n -to-0 = let r = n -to-0 in suc n , toList r , (0 , (cong suc (fstn-to-0≡n n))) , snd (snd r)
 
-    x⊏ssubsets : (x : carrier) {x' : carrier} {xs : List carrier} → ((d , ds) : ordered (x ∷ x' ∷ xs))
-      → ⊏List x (ssubsets x' xs ds)
-    x⊏ssubsets x (d , ds) (y , ys , es) p with (split⊆ ds es (fst (ssubsets-corr ds es p)))
-    ... | inl q = subst _ q d
-    ... | inr q = ⊏-trans _ _ _ d q
+  fstn-to-0≡n zero = refl
+  fstn-to-0≡n (suc n) = refl
 
-    insertSsubsets : (x : carrier) {x' : carrier} {xs : List carrier} → (ordered (x ∷ x' ∷ xs)) → List neSet
-    insertSsubsets x {x'} {xs} (d , ds) = insertList x (ssubsets x' xs ds) (x⊏ssubsets x (d , ds))
-
-    ssubsets x [] ds = []
-    ssubsets x (x' ∷ xs) (d , ds) = [ singleton x ] ++ subsets x' xs ds ++ insertSsubsets x (d , ds)
-
-    ssubsets-corr {x} {[]} tt* {y} {ys} es P = absurd (¬x∈[] P)
-
-    ssubsets-corr {x} {x' ∷ xs} (d , ds) {y} {[]} es P with dec++ discreteneSet _ [ singleton x ] _ P
-    ... | inl Q = (λ z z∈[y] → here (x∈[y]→x≡y carrier-isSet z∈[y] ∙ cons-inj₁ (toList≡ _ _ (x∈[y]→x≡y neSet-isSet Q)))) , arith (length xs)
-    ... | inr Q with dec++ discreteneSet _ (subsets x' xs ds) (insertSsubsets x (d , ds)) Q
-    ... |       inl R = (λ x₁ x₂ → there (sub x₁ x₂)) , arith (length xs)
-      where sub = (subsets-corr ds tt* R)
-    ... |       inr R = (subst (λ a → [ a ] ⊆L (x ∷ x' ∷ xs))
-                         (sym (insertList-head (x⊏ssubsets x (d , ds)) es R))
-                         λ x₁ x₂ → here (x∈[y]→x≡y carrier-isSet x₂)) , arith (length xs)
-
-    ssubsets-corr {x} {x' ∷ xs} (d , ds) {y} {y' ∷ ys} (e , es) P with dec++ discreteneSet _ [ singleton x ] _ P
-    ... | inl Q = absurd (¬cons≡nil (cons-inj₂ (toList≡ _ _ (x∈[y]→x≡y neSet-isSet Q))))
-    ... | inr Q with dec++ discreteneSet _ (subsets x' xs ds) (insertSsubsets x (d , ds)) Q
-    ... |       inl R = (λ x₁ x₂ → there (sub x₁ x₂)) , suc-≤-suc (⊆→length (e , es) ds sub)
-      where sub = (subsets-corr ds (e , es) R)
-    ... |       inr R = mmh , (suc-≤-suc (snd IH))
-      where
-      IH = ssubsets-corr ds es (insertList-tail (x⊏ssubsets x (d , ds)) (e , es) R)
-      mmh = subst (λ a → (a ∷ y' ∷ ys) ⊆L (x ∷ x' ∷ xs))
-                           (sym (insertList-head (x⊏ssubsets x (d , ds)) (e , es) R) )
-                           (xs⊆Lys→xxs⊆Lxys _ _ x (fst IH))
-
-
-
-    ssubsets-comp : {x : carrier} {xs : List carrier} (ds : ordered (x ∷ xs))
-      → {y : carrier} {ys : List carrier} (es : ordered (y ∷ ys))
-      → (y , ys , es) ⊂ (x , xs , ds)
-      → (y , ys , es) ∈ ssubsets x xs ds
-    ssubsets-comp {x} {[]} ds {y} {ys} es P = absurd (¬-<-zero (pred-≤-pred (snd P)))
-    ssubsets-comp {x} {x' ∷ xs} (d , ds) {y} {[]} tt* P with
-      split⊆ (d , ds) _ (fst P)
-    ... | inl p = here (ΣPathP ((sym p) , ΣPathP (refl , refl)))
-    ... | inr p = x∈xs→x∈xs++ys {Adec = discreteneSet} _ (_ ∷ subsets x' xs ds) _ (there IH)
-                  where
-                  IH = subsets-comp ds tt* ((⊏-step (d , ds) tt* (fst P) (⊏→≢ p)))
-    ssubsets-comp {x} {x' ∷ xs} (d , ds) {y} {y' ∷ ys} (e , es) P with
-      split⊆ (d , ds) (e , es) (fst P)
-    ... | inl p = x∈xs→x∈ys++xs _ (insertList x (ssubsets x' xs ds) (x⊏ssubsets x (d , ds))) _
-                  (subst (_∈ insertList x (ssubsets x' xs ds) (x⊏ssubsets x (d , ds))) (toneSet≡ _ _ (cong (_∷ y' ∷ ys) p)) lemma )
-                   where
-                   IH = ssubsets-comp ds es ((⊆-skip (d , ds) (e , es) (fst P) p) , (pred-≤-pred (snd P)))
-                   lemma = insertList-corr (x⊏ssubsets x (d , ds)) (y' , ys , es) (subst (_⊏ y') (sym p) e) IH
-    ... | inr p = x∈xs→x∈xs++ys {Adec = discreteneSet} _ (_ ∷ subsets x' xs ds) _ (there (subsets-comp ds (e , es) (⊏-step (d , ds) (e , es) (fst P) (⊏→≢ p))))
-
-    Λfaces : (x : carrier) (x' : carrier) (xs : List carrier) → ordered (x ∷ x' ∷ xs) → List neSet
-    Λfaces x x' xs (d , ds) = [ singleton x ] ++ ssubsets x' xs ds ++ insertSsubsets x (d , ds)
-
-    Λclosed : {x : carrier} {x' : carrier} {xs : List carrier} (ds : ordered (x ∷ x' ∷ xs))
-      → {y : carrier} {ys : List carrier} (es : ordered (y ∷ ys))
-      → (y , ys , es) ∈ Λfaces x x' xs (ds)
-      → (Z : neSet) → Z ⊆ (y , ys , es) → Z ∈ Λfaces x x' xs (ds)
-    Λclosed {x} {x'} {[]} (d , ds) {y} {ys} es P (z , zs , fs) Q = subst (_∈ Λfaces x x' [] (d , ds)) (sym Z≡Y) P
-      where
-      mmh = x∈[y]→x≡y neSet-isSet P
-      ys≡[] = fst (PathPΣ (snd (PathPΣ mmh)))
-      jaa = subst (λ a → (z ∷ zs) ⊆L (y ∷ a)) ys≡[] Q
-      ooh = ys⊆[x] fs jaa
-      Z≡Y : (z , zs , fs) ≡ (y , ys , es)
-      Z≡Y = toneSet≡ _ _ (Listη (cons-inj₁ ooh) (cons-inj₂ ooh ∙ sym ys≡[]))
-
-
-    Λclosed {x} {x'} {x'' ∷ xs} (d , ds) {y} {[]} es P Z Q = subst (_∈ Λfaces x x' (x'' ∷ xs) (d , ds)) (sym (toneSet≡ _ _ (ys⊆[x] (snd (snd Z)) Q))) P
-
-
-    Λclosed {x} {x'} {x'' ∷ xs} (d , ds) {y} {y' ∷ ys} (e , es) P (z , [] , fs) Q with dec++ discreteneSet _ [ singleton x ] _ P
-    ... | inl R = absurd (¬cons≡nil (fst (PathPΣ (snd (PathPΣ (x∈[y]→x≡y neSet-isSet R))))))
-    ... | inr R with dec++ discreteneSet _ (ssubsets x' (x'' ∷ xs) ds) (insertSsubsets x (d , ds)) R
-    ... | inl S = there (x∈xs→x∈xs++ys {Adec = discreteneSet} (z , [] , tt*) _ _
-                          (ssubsets-comp ds tt*
-                            (⊆⊂-trans (z , [] , tt*) (y , y' ∷ ys , e , es) (x' , x'' ∷ xs , ds)
-                              Q
-                              (ssubsets-corr ds (e , es) S))))
-    ... | inr S with split⊆ (e , es) fs Q
-    ... | inl p = here (toneSet≡ _ _ (Listη (sym p ∙ insertList-head (x⊏ssubsets x (d , ds)) (e , es) S) refl))
-    ... | inr p = there (x∈xs→x∈xs++ys {Adec = discreteneSet} (z , [] , tt*) _ _
-                          (ssubsets-comp ds tt*
-                            (⊆⊂-trans (z , [] , tt*) (y' , ys , es) (x' , x'' ∷ xs , ds)
-                              (⊏-step (e , es) tt* Q (⊏→≢ p))
-                              (ssubsets-corr ds es ((insertList-tail (x⊏ssubsets x (d , ds)) (e , es) S))))))
-
-
-    Λclosed {x} {x'} {x'' ∷ xs} (d , ds) {y} {y' ∷ ys} (e , es) P (z , z' ∷ zs , fs) Q with dec++ discreteneSet _ [ singleton x ] _ P
-    ... | inl R = absurd (¬cons≡nil (fst (PathPΣ (snd (PathPΣ (x∈[y]→x≡y neSet-isSet R))))))
-    ... | inr R with dec++ discreteneSet _ (ssubsets x' (x'' ∷ xs) ds) (insertSsubsets x (d , ds)) R
-    ... | inl S = there (x∈xs→x∈xs++ys {Adec = discreteneSet} (z , z' ∷ zs , fs) _ _
-                        (ssubsets-comp ds fs
-                          (⊆⊂-trans (z , z' ∷ zs , fs) (y , y' ∷ ys , e , es) (x' , x'' ∷ xs , ds) Q
-                          (ssubsets-corr ds (e , es) S))))
-    ... | inr S with split⊆ (e , es) fs Q
-    ... | inl p = there (x∈xs→x∈ys++xs _ _ (ssubsets x' (x'' ∷ xs) ds) goal)
-      where
-      mmh = (insertList-tail (x⊏ssubsets x (d , ds)) (e , es) S)
-      ooh = ssubsets-corr ds (es) mmh
-      aah = (insertList-head (x⊏ssubsets x (d , ds)) (e , es) S)
-      arg :  (z' , zs , snd fs) ⊆ (y' , ys , es)
-      arg = ⊆-skip (e , es) fs Q p
-      transs = ⊆⊂-trans (z' , zs , snd fs) (y' , ys , es) (x' , x'' ∷ xs , ds) arg ooh
-      comput = ssubsets-comp (ds) (snd fs) transs
-      almost = insertList-corr (x⊏ssubsets x (d , ds)) (z' , zs , snd fs) (subst (_⊏ z') (sym p ∙ aah) (fst fs)) comput
-      goal = subst (_∈ insertList x (ssubsets x' (x'' ∷ xs) ds) (x⊏ssubsets x (d , ds))) (ΣPathP ((sym aah ∙ p) , (ΣPathP (refl , toPathP (ordered-isProp _ _))))) almost
-
-    ... | inr p = there (x∈xs→x∈xs++ys {Adec = discreteneSet} (z , z' ∷ zs , fs) _ _
-                          (ssubsets-comp ds fs
-                            (⊆⊂-trans (z , z' ∷ zs , fs) (y' , ys , es) (x' , x'' ∷ xs , ds)
-                              (⊏-step (e , es) fs Q (⊏→≢ p))
-                              (ssubsets-corr ds es ((insertList-tail (x⊏ssubsets x (d , ds)) (e , es) S))))))
-
-
-    Λadjoin-where : {x : carrier} {x' : carrier} {xs : List carrier} (ds : ordered (x ∷ x' ∷ xs))
-      → {y : carrier} {ys : List carrier} (es : ordered (y ∷ ys))
-      → (y , ys , es) ∈ Λfaces x x' xs (ds)
-      → ¬Type (x ∈ (y ∷ ys))
-      → (y , ys , es) ∈ ssubsets x' xs (snd ds)
-    Λadjoin-where {x} {x'} {xs} (d , ds) {y} {ys} es P ¬p with dec++ discreteneSet _ [ singleton x ] _ P
-    ... | inl Q = absurd (¬p (here (sym (fst (PathPΣ (x∈[y]→x≡y neSet-isSet Q))))))
-    ... | inr Q with dec++ discreteneSet _ (ssubsets x' xs ds) (insertSsubsets x (d , ds)) Q
-    ... | inr R = absurd (¬p (here (sym (insertList-head (x⊏ssubsets x (d , ds)) es R))))
-    ... | inl R = R
-
-    Λadjoin : {x : carrier} {x' : carrier} {xs : List carrier} (ds : ordered (x ∷ x' ∷ xs))
-      → {y : carrier} {ys : List carrier} (es : ordered (y ∷ ys))
-      → (y , ys , es) ∈ Λfaces x x' xs (ds)
-      → ¬Type (x ∈ (y ∷ ys)) → x ⊏ y
-    Λadjoin {x} {x'} {xs} (d , ds) {y} {ys} es P ¬p with split⊆ ds es (fst (ssubsets-corr ds es (Λadjoin-where (d , ds) es P ¬p)))
-    ... | inl p = subst (x ⊏_) p d
-    ... | inr p = ⊏-trans x x' y d p
-
-
-    Λadjoin-corr : {x : carrier} {x' : carrier} {xs : List carrier} (ds : ordered (x ∷ x' ∷ xs))
-      → {y : carrier} {ys : List carrier} (es : ordered (y ∷ ys))
-      → (P : (y , ys , es) ∈ Λfaces x x' xs ds)
-      → (¬p : ¬Type (x ∈ (y ∷ ys)))
-      → insert x (y , ys , es) (Λadjoin ds es P ¬p) ∈ Λfaces x x' xs ds
-    Λadjoin-corr {x} {x'} {xs} (d , ds) {y} {ys} es P ¬p = there (x∈xs→x∈ys++xs _
-      (insertSsubsets x (d , ds)) (ssubsets x' xs ds)
-       (insertList-corr (x⊏ssubsets x (d , ds)) (y , ys , es) (Λadjoin (d , ds) es P ¬p) (Λadjoin-where (d , ds) es P ¬p)))
-
-
-
-  subsets : neSet → List neSet
-  subsets (x , xs , ds) = WithoutΣ.subsets x xs ds
-
-  module _ {X Y : neSet} where
-    subsets-corr : Y ∈ subsets X → Y ⊆ X
-    subsets-comp : Y ⊆ X → Y ∈ subsets X
-
-    subsets-corr P = WithoutΣ.subsets-corr (snd (snd X)) (snd (snd Y)) P
-    subsets-comp P = WithoutΣ.subsets-comp (snd (snd X)) (snd (snd Y)) P
-
-  ssubsets : neSet → List neSet
-  ssubsets (x , xs , ds) = WithoutΣ.ssubsets x xs ds
-
-  ssubsets-corr : {X Y : neSet} → Y ∈ ssubsets X → Y ⊂ X
-  ssubsets-corr {x , xs , ds} {y , ys , es} P = WithoutΣ.ssubsets-corr ds es P
-
-  ssubsets-comp : {X Y : neSet} → Y ⊂ X → Y ∈ ssubsets X
-  ssubsets-comp {x , xs , ds} {y , ys , es} P = WithoutΣ.ssubsets-comp ds es P
-
-  Λfaces = WithoutΣ.Λfaces
-
-  Λclosed : {x : carrier} {x' : carrier} {xs : List carrier} (ds : ordered (x ∷ x' ∷ xs))
-    → Λfaces x x' xs ds closedUnder _⊆_
-  Λclosed {x} {x'} {xs} (d , ds) (y , ys , es) = WithoutΣ.Λclosed (d , ds) es
-
-  Λadjoin : {x : carrier} {x' : carrier} {xs : List carrier} (ds : ordered (x ∷ x' ∷ xs))
-    → ((y , ys , es) : neSet)
-    → (y , ys , es) ∈ Λfaces x x' xs (ds)
-    → ¬Type (x ∈ (y ∷ ys)) → x ⊏ y
-  Λadjoin ds (y , ys , es) = WithoutΣ.Λadjoin ds es
-
-  Λadjoin-corr : {x : carrier} {x' : carrier} {xs : List carrier} (ds : ordered (x ∷ x' ∷ xs))
-    → ((y , ys , es) : neSet)
-    → (P : (y , ys , es) ∈ Λfaces x x' xs (ds))
-    → (¬p : ¬Type (x ∈ (y ∷ ys)))
-    → insert x (y , ys , es) (Λadjoin ds (y , ys , es) P ¬p) ∈ Λfaces x x' xs ds
-  Λadjoin-corr ds (y , ys , es) = WithoutΣ.Λadjoin-corr ds es
-
-module ℕSet where
-  _>_ : Rel ℕ ℕ ℓ-zero
-  m > n = (n < m)
-
-  ℕlSet = lset ℕ discreteℕ _>_ (λ m n → m≤n-isProp) (λ x → ¬m<m) (λ m n o p q → <-trans q p)
-
-  open neSet ℕlSet public
+  sucn-ordered : {(1+ n) : ℕ₊₁} → ordered (suc n ∷ fst (n -to-0) ∷ fst (snd (n -to-0)))
+  sucn-ordered {1+ n} = ((0 , cong suc (fstn-to-0≡n n)) , snd (snd (n -to-0)))

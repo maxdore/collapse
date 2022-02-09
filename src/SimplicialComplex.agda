@@ -102,7 +102,7 @@ record SimplicialComplex : Type (ℓ-max (ℓ-suc ℓ₀) (ℓ-suc ℓ₁)) wher
 
 
 module _ where
-  open ℕSet
+  open neSet ℕlSet
 
   ℕSC : (faces : List neSet) → faces closedUnder _⊆_
     → SimplicialComplex
